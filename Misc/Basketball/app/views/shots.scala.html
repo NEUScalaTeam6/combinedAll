@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <style type="text/css">
+	body {
+        padding-left: 280px;
+    }
+    #pname {
+        font-size: 30px;
+    }
+    h2 {
+        padding-left: 380px;
+    }
+    #playground {
+        width: 500px;
+    }
+    #selectContent > #go {
+        margin-left: 100px;
+        margin-bottom: 10px;
+        width: 35px;
+        position: absolute;
+        cursor: pointer;
+    }
+    #selectContent > #back {
+        width: 50px;
+        margin-top: 20px;
+        margin-left: 350px;
+        position: absolute;
+        cursor: pointer;
+    }
+    #selectContent {
+        font-size: 25px;
+    }
+	</style>
+        <title>Basketball Strategy Board</title>
+        <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+        <h2>NBA Analytics</h2>
+    </head>
+
+    <body>
+        <p id="selectContent">Shot Type
+            <select id="shottype">
+                <option value="All">All Shot</option>
+                <option value="Made">Made Shot</option>
+                <option value="Missed">Missed Shot</option>
+            </select>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                Period
+            <select id="period">
+                <option value="All">All</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                Season
+            <select id="season">
+                <option value="2016-17">2016-17</option>
+                <option value="2015-16">2015-16</option>
+                <option value="2014-15">2014-15</option>
+                <option value="2013-14">2013-14</option>
+                <option value="2012-13">2012-13</option>
+                <option value="2011-12">2011-12</option>
+                <option value="2010-11">2010-11</option>
+                <option value="2009-10">2009-10</option>
+                <option value="2008-09">2008-09</option>
+                <option value="2007-08">2007-08</option>
+                <option value="2006-07">2006-07</option>
+                <option value="2005-06">2005-06</option>
+            </select>
+            <img id="go" src="go.png" onclick="change()">
+            <img id="back" src="main.png" onclick="goBack()">
+        </p>
+
+        <p id="pname"></p>
+        <img id="playground" style="display: none;" src="/assets/images/playground.png">
+
+        <svg width = 940 height="500">
+            <image xlink:href="/assets/images/playground.png"/>
+            <!--left corner-->
+            <path d="M4 4 h 136 v 24 h -136 Z" fill="rgba(0,0,255,0.2)"/>
+            <!--left side-->
+            <path d="M4 32 h 140 v 136 h -140 Z" fill="rgba(0,255,0,0.3)"/>
+            <!--left middle-->
+            <path d="M144 32 A 235 235 0 0 1 274 168 H 144 Z" fill ="rgba(0,255,255,0.3)"/>
+            <!--left center 3Pt-->
+            <path d="M144 4 h 200 v 164 h -66 A 239 239 0 0 0 144 28 Z" fill ="rgba(255,0,255,0.3)"/>
+            <!--center 3Pt-->
+            <path d="M194 168 v 164 H 274 A 235 235 0 0 0 274 168 Z" fill ="rgba(255,255,0,0.5)"/>
+            <!--center mid-->
+            <path d="M344 168 v 164 H 278 A 239 239 0 0 0 278 168 Z" fill ="rgba(255,0,128,0.5)"/>
+            <!--in paint-->
+            <path d="M4 172 h 186 v 156 h -186 v -156 Z" fill ="rgba(255,128,0,0.5)"/>
+            <!--Restricted-->
+            <path d="M40 206 h 12.5 A 44 44 0 0 1 52.5 294 h -12.5 Z" fill ="rgba(255,0,0,0.3)"/>
+            <!--right center 3Pt-->
+            <path d="M144 496 h 200 v -164 h -66 A 239 239 0 0 1 144 472 Z" fill ="rgba(255,0,255,0.3)"/>
+            <!--right middle-->
+            <path d="M144 468 A 235 235 0 0 0 274 332 H 144 Z" fill ="rgba(0,255,255,0.3)"/>
+            <!--right side-->
+            <path d="M4 468 h 140 v -136 h -140 Z" fill="rgba(0,255,0,0.3)"/>
+            <!--right corner-->
+            <path d="M4 496 h 136 v -24 h -136 Z" fill="rgba(0,0,255,0.2)"/>
+            <path d="M344 4 H 936 V 496 H 344 Z" fill="rgba(0,0,0,0.3)"/>
+        </svg>
+
+        <canvas id="myCanvas" width="940" height="500" />
+        <script>
+
+// to write the message to the strategy board
+
+window.onload = function(){
+
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    var img = document.getElementById("playground");
+    ctx.drawImage(img, 0, 0);
+    var id = urlParameter("id");
+    var name = urlParameter("name");
+    var shottype = urlParameter("shottype");
+    var period = urlParameter("period");
+    var season = urlParameter("season");
+
+    $("#shottype").val(shottype);
+    $("#period").val(period);
+    $("#season").val(season);
+
+    if(shottype == "All"){
+        shottype = "All Shot";
+    }else if(shottype == "Made"){
+        shottype = "Made Shot";
+    }else if(shottype == "Missed"){
+        shottype = "Missed Shot";
+    }
+
+    if(period == "All"){
+        period = 0;
+    }
+
+    var pname = document.getElementById("pname");
+    name = name.replace("_"," ");
+    name = name.replace("|","'");
+    pname.innerHTML= name;
+
+    if(false){
+        $.ajax({
+            type:"GET",
+            url:"/assets/data/CurryFinalDatatest.csv",
+
+            success: function(result){
+                //.....
+                debugger;
+                var lines = result.split('\n');
+                var i;
+                for(i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    var args = line.split(',');
+                    var x = Number(args[19]);
+                    var y = Number(args[20]);
+                    if(x>47) {
+                        x = 94-x;
+                        y = 50-y;
+                    }
+
+                    var area = args[15];
+                    var leftright = args[16];
+
+                    ctx.beginPath();
+                    ctx.arc(x*10,y*10,10,0,2*Math.PI);
+                    if(area == "Restricted Area"){
+                        ctx.fillStyle = "rgba(255, 0, 0, 0.35)";
+                    } else if(area == "In The Paint (Non-RA)"){
+                        ctx.fillStyle = "rgba(255, 128, 0, 0.35)";
+                    } else if(area == "Mid-Range") {
+                        if(leftright == "Left Side(L)") {
+                            ctx.fillStyle = "rgba(0, 128, 0, 0.35)";
+                        } else if(leftright == "Right Side(R)") {
+                            ctx.fillStyle = "rgba(0, 255, 255, 0.35)";
+                        } else if(leftright == "Left Side Center(LC)"){
+                            ctx.fillStyle = "rgba(255, 255, 0, 0.35)";
+                        } else if(leftright == "Right Side Center(RC)"){
+                            ctx.fillStyle = "rgba(182, 0, 128, 0.55)";
+                        } else {
+                            ctx.fillStyle = "rgba(0, 255, 0, 0.35)";
+                        }
+                    } else if(area == "Above the Break 3") {
+                        if(leftright == "Left Side Center(LC)"){
+                            ctx.fillStyle = "rgba(255, 128, 128, 0.35)";
+                        } else if(leftright == "Right Side Center(RC)"){
+                            ctx.fillStyle = "rgba(64, 128, 128, 0.55)";
+                        } else {
+                            ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+                        }
+                    } else if(area == "Right Corner 3") {
+                        ctx.fillStyle = "rgba(0, 0, 255, 0.35)";
+                    } else if(area == "Left Corner 3") {
+                        ctx.fillStyle = "rgba(255, 0, 255, 0.35)";
+                    }
+                    ctx.fillStyle = "rgba(0,0,0,0,1)"
+                    ctx.fill();
+                }
+                /*
+                 for(i = 0; i < result.resultSets[0].rowSet.length; i++){
+                 if(result.resultSets[0].rowSet[i][10] == shottype || shottype == "All Shot"){
+                 var x = result.resultSets[0].rowSet[i][17] + 0;
+                 x = x*10;
+                 var y = result.resultSets[0].rowSet[i][18] + 10;
+                 y = y*10;
+                 var area = result.resultSets[0].rowSet[i][13];
+                 var leftright = result.resultSets[0].rowSet[i][14];
+                 debugger;
+                 ctx.beginPath();
+                 ctx.arc(y,x,10,0,2*Math.PI);
+                 if(area == "Restricted Area"){
+                 ctx.fillStyle = "rgba(255, 0, 0, 0.35)";
+                 } else if(area == "In The Paint (Non-RA)"){
+                 ctx.fillStyle = "rgba(255, 128, 0, 0.35)";
+                 } else if(area == "Mid-Range") {
+                 if(leftright == "Left Side(L)") {
+                 ctx.fillStyle = "rgba(0, 128, 0, 0.35)";
+                 } else if(leftright == "Right Side(R)") {
+                 ctx.fillStyle = "rgba(0, 255, 255, 0.35)";
+                 } else if(leftright == "Left Side Center(LC)"){
+                 ctx.fillStyle = "rgba(255, 255, 0, 0.35)";
+                 } else if(leftright == "Right Side Center(RC)"){
+                 ctx.fillStyle = "rgba(182, 0, 128, 0.55)";
+                 } else {
+                 ctx.fillStyle = "rgba(0, 255, 0, 0.35)";
+                 }
+                 } else if(area == "Above the Break 3") {
+                 if(leftright == "Left Side Center(LC)"){
+                 ctx.fillStyle = "rgba(255, 128, 128, 0.35)";
+                 } else if(leftright == "Right Side Center(RC)"){
+                 ctx.fillStyle = "rgba(64, 128, 128, 0.55)";
+                 } else {
+                 ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+                 }
+                 } else if(area == "Right Corner 3") {
+                 ctx.fillStyle = "rgba(0, 0, 255, 0.35)";
+                 } else if(area == "Left Corner 3") {
+                 ctx.fillStyle = "rgba(255, 0, 255, 0.35)";
+                 }
+                 ctx.fill();
+                 }
+                 }*/
+            }
+        });
+    }
+}
+
+// to get the parameter from url
+function urlParameter(val){
+    var results = new RegExp('[\\?&]' + val + '=([^&#]*)').exec(window.location.href);
+    if(results == null){
+        return null;
+    }else{
+        return results[1] || 0;
+    }
+}
+
+// to go to the same page based on the new parameters
+function change(){
+    var shottype = document.getElementById("shottype").value;
+    var period = document.getElementById("period").value;
+    var season = document.getElementById("season").value;
+    var id = urlParameter("id");
+    var name = urlParameter("name");
+    window.location.href = "shots.html?id=" + id + "&name=" + name + "&shottype=" + shottype + "&period=" + period + "&season=" + season;
+    debugger;
+}
+
+function goBack(){
+    window.location.href = "index.html";
+}
+
+</script>
+
+
+    </body>
+</html>

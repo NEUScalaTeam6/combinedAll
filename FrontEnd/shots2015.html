@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style type="text/css">
+	body {
+	padding-left: 280px;
+	}
+	#pname {
+	font-size: 30px;
+	}
+	h2 {
+	padding-left: 380px;
+	}
+	#playground {
+	width: 500px;
+	}
+	#back {
+	width: 50px;
+	margin-left: 880px;
+	position: absolute;
+	cursor: pointer;
+	}
+	</style>
+    <title>Basketball Strategy Board</title>
+	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+	<h2>Player Analytics</h2>
+</head>
+
+<body>
+<img id="back" src="main.png" onclick="goBack()">
+
+<p id="pname"></p>
+<img id="playground" style="display: none;" src="playground.png">
+
+<canvas id="myCanvas" width="940" height="700" />
+<script>
+
+// to write the message to the strategy board
+
+window.onload = function(){
+	var c = document.getElementById("myCanvas");
+	var ctx = c.getContext("2d");
+	var img = document.getElementById("playground");
+	ctx.drawImage(img, 0, 0);
+	var id = urlParameter("id");
+	var name = urlParameter("name");
+	
+	var pname = document.getElementById("pname");
+	name = name.replace("_"," ");
+	name = name.replace("|","'");
+	pname.innerHTML= name;
+	
+	var my_gradient = ctx.createLinearGradient(270, 0, 670, 0);
+	my_gradient.addColorStop(0.2, "blue");
+	my_gradient.addColorStop(0.4, "yellow");
+	my_gradient.addColorStop(0.8, "red");
+	ctx.fillStyle = my_gradient;
+	ctx.fillRect(270, 550, 400, 100);
+	ctx.font = "20px Arial";
+	ctx.fillText("FG% vs League Avg",10,600);
+	
+	if(id != null){
+	$.ajax({
+            type:"GET",
+            url:"shot_result.csv",
+
+            success: function(result){
+                //.....
+				var lines = result.split("\n");
+				for(i = 0; i < lines.length; i++){
+					var line = lines[i].split(",");
+					if(line[0] == id){
+						debugger;
+						ctx.beginPath();
+						var shotnum = line[3] * 2;
+						if(shotnum > 10){
+							shotnum = 10;
+						}
+						ctx.arc(line[2] * 20,line[1] * 20,shotnum,0,2*Math.PI);
+						var movep = (line[4] - line[5]) * 300;
+						var p = ctx.getImageData(470 + movep, 600, 1, 1).data; 
+						var hex = "#" + ("000000" + rgbToHex(p[0], p[1], p[2])).slice(-6);
+						ctx.fillStyle = hex;
+						ctx.fill();
+					}
+				}
+            }
+        });
+	}
+}
+
+// to get the parameter from url
+function urlParameter(val){
+    var results = new RegExp('[\\?&]' + val + '=([^&#]*)').exec(window.location.href);
+	if(results == null){
+		return null;
+	}else{
+		return results[1] || 0;
+	}
+}
+
+// to get the color code
+function rgbToHex(r, g, b) {
+    if (r > 255 || g > 255 || b > 255)
+        throw "Invalid color component";
+    return ((r << 16) | (g << 8) | b).toString(16);
+}
+
+function goBack(){
+	window.location.href = "players2015.html";
+}
+
+</script>
+
+
+</body>
+</html>

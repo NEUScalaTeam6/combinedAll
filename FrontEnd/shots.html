@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style type="text/css">
+	body {
+	padding-left: 280px;
+	}
+	#pname {
+	font-size: 30px;
+	}
+	h2 {
+	padding-left: 380px;
+	}
+	#playground {
+	width: 500px;
+	}
+	#selectContent > #go {
+	margin-left: 100px;
+	margin-bottom: 10px;
+	width: 35px;
+	position: absolute;
+	cursor: pointer;
+	}
+	#selectContent > #back {
+	width: 50px;
+	margin-top: 20px;
+	margin-left: 350px;
+	position: absolute;
+	cursor: pointer;
+	}
+	#selectContent {
+	font-size: 25px;
+	}
+	</style>
+    <title>Basketball Strategy Board</title>
+	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+	<h2>NBA Analytics</h2>
+</head>
+
+<body>
+<p id="selectContent">Shot Type
+<select id="shottype">
+	<option value="All">All Shot</option>
+	<option value="Made">Made Shot</option>
+	<option value="Missed">Missed Shot</option>
+</select>
+&nbsp;&nbsp;&nbsp;&nbsp;
+Period
+<select id="period">
+	<option value="All">All</option>
+	<option value="1">1</option>
+	<option value="2">2</option>
+	<option value="3">3</option>
+	<option value="4">4</option>
+</select>
+&nbsp;&nbsp;&nbsp;&nbsp;
+Season
+<select id="season">
+	<option value="2016-17">2016-17</option>
+	<option value="2015-16">2015-16</option>
+	<option value="2014-15">2014-15</option>
+	<option value="2013-14">2013-14</option>
+	<option value="2012-13">2012-13</option>
+	<option value="2011-12">2011-12</option>
+	<option value="2010-11">2010-11</option>
+	<option value="2009-10">2009-10</option>
+	<option value="2008-09">2008-09</option>
+	<option value="2007-08">2007-08</option>
+	<option value="2006-07">2006-07</option>
+	<option value="2005-06">2005-06</option>
+</select>
+<img id="go" src="go.png" onclick="change()">
+<img id="back" src="main.png" onclick="goBack()">
+</p>
+
+<p id="pname"></p>
+<img id="playground" style="display: none;" src="playground.png">
+
+<canvas id="myCanvas" width="940" height="500" />
+<script>
+
+// to write the message to the strategy board
+
+window.onload = function(){
+	debugger;
+	var c = document.getElementById("myCanvas");
+	var ctx = c.getContext("2d");
+	var img = document.getElementById("playground");
+	ctx.drawImage(img, 0, 0);
+	var id = urlParameter("id");
+	var name = urlParameter("name");
+	var shottype = urlParameter("shottype");
+	var period = urlParameter("period");
+	var season = urlParameter("season");
+	
+	$("#shottype").val(shottype);
+	$("#period").val(period);
+	$("#season").val(season);
+	
+	if(shottype == "All"){
+		shottype = "All Shot";
+	}else if(shottype == "Made"){
+		shottype = "Made Shot";
+	}else if(shottype == "Missed"){
+		shottype = "Missed Shot";
+	}
+	
+	if(period == "All"){
+		period = 0;
+	}
+	
+	var pname = document.getElementById("pname");
+	name = name.replace("_"," ");
+	name = name.replace("|","'");
+	pname.innerHTML= name;
+	
+	if(id != null){
+	$.ajax({
+            type:"GET",
+            dataType:"jsonp",
+            url:"http://stats.nba.com/stats/shotchartdetail?CFID=33&CFPARAMS=" + season + "&ContextFilter=&ContextMeasure=FGA&DateFrom=&DateTo=&GameID=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PaceAdjust=N&PerMode=PerGame&Period=" + period + "&PlusMinus=N&PlayerPosition=&Rank=N&RookieYear=&Season=" + season + "&SeasonSegment=&SeasonType=Regular+Season&TeamID=0&VsConference=&VsDivision=&PlayerID=" + id,
+
+            success: function(result){
+                //.....
+				debugger;
+				for(i = 0; i < result.resultSets[0].rowSet.length; i++){
+					if(result.resultSets[0].rowSet[i][10] == shottype || shottype == "All Shot"){
+						var x = result.resultSets[0].rowSet[i][17] + 250;
+						x = x;
+						var y = result.resultSets[0].rowSet[i][18];
+						y = y + 55;
+						
+						ctx.beginPath();
+						ctx.arc(y,x,10,0,2*Math.PI);
+						ctx.fillStyle = "rgba(255, 0, 0, 0.1)";
+						ctx.fill();
+					}
+				}
+            }
+        });
+	}
+}
+
+// to get the parameter from url
+function urlParameter(val){
+    var results = new RegExp('[\\?&]' + val + '=([^&#]*)').exec(window.location.href);
+	if(results == null){
+		return null;
+	}else{
+		return results[1] || 0;
+	}
+}
+
+// to go to the same page based on the new parameters
+function change(){
+	var shottype = document.getElementById("shottype").value;
+	var period = document.getElementById("period").value;
+	var season = document.getElementById("season").value;
+	var id = urlParameter("id");
+	var name = urlParameter("name");
+	window.location.href = "shots.html?id=" + id + "&name=" + name + "&shottype=" + shottype + "&period=" + period + "&season=" + season;
+	debugger;
+}
+
+function goBack(){
+	window.location.href = "players.html";
+}
+
+</script>
+
+
+</body>
+</html>

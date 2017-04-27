@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+	padding-left: 450px;
+	background-image: url("background.png");
+	background-size: 1800px;	
+}
+
+#myInput {
+  background-image: url("search.png");
+  background-size: 20px;
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  width: 50%;
+  font-size: 16px;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+
+#Go {
+  padding: 12px 20px 12px 20px;
+  font-size: 16px;
+}
+
+#Back {
+  padding: 12px 20px 12px 20px;
+  font-size: 16px;
+}
+
+#myTable {
+  border-collapse: collapse;
+  width: 50%;
+  border: 1px solid #ddd;
+  font-size: 18px;
+}
+
+#myTable th, #myTable td {
+  text-align: left;
+  padding: 12px;
+}
+
+#myTable tr {
+  border-bottom: 1px solid #ddd;
+}
+
+#myTable tr.header, #myTable tr:hover {
+  background-color: #f1f1f1;
+}
+
+h1{
+	font-family: Tw Cen MT;
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
+</head>
+<body>
+
+<h1>All Shots Statistic - Search Players</h1>
+
+<input id="myInput" onkeyup="myFunction()" placeholder="Search for names.." title="Type in a name">
+<button id="Go" onclick="goFunction()">Go</button>
+<button id="Back" onclick="backFunction()">Back</button>
+
+<table id="myTable">
+  <tr class="header">
+    <th>Name</th>
+	<th>Player ID</th>
+  </tr>
+</table>
+
+<script>
+var names = [];
+var ids = [];
+
+$.ajax({
+		type:"GET",
+		url:"players.csv",
+		success: function(result){
+			//.....
+			debugger;
+			var lines = result.split("\n");
+			for(i = 1; i < lines.length; i++){
+				var line = lines[i].split(",");
+				ids.push(line[0]);
+				names.push(line[1]);
+			}
+		}
+    });
+
+var table = document.getElementById("myTable");
+
+// to go to the specified url
+function goFunction(){
+	var id;
+	var name;
+	if(table.rows.length > 0){
+	id = table.rows[1].cells[1].innerText;
+	name = table.rows[1].cells[0].innerText;
+	name = name.replace(" ","_");
+	name = name.replace("'","|");
+	window.location.href = "shots.html?id=" + id + "&name=" + name + "&shottype=All&period=All&season=2016-17";
+	}
+}
+
+// to go back to the mainpage
+function backFunction(){
+	window.location.href = "index.html";
+}
+
+// search bar function
+function myFunction() {
+  var input, filter, table, tr, td, i;
+  input = document.getElementById("myInput");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("myTable");
+  
+  var len = table.rows.length;
+  for(i = 1; i < len; i++){
+     table.deleteRow(1);
+  }
+  
+  var count = 0;
+  for (i = 0; i < names.length; i++) {
+    var name = names[i];
+    if (name) {
+	  if(name.toUpperCase() == filter){
+	    var row = table.insertRow(1);
+		row.style.backgroundColor = "white";
+		var cell1 = row.insertCell(0);
+		var cell2 = row.insertCell(1);
+		cell1.innerHTML = name;
+		cell2.innerHTML = ids[i];
+		break;
+	  }else if (name.toUpperCase().indexOf(filter) > -1 && filter != "") {
+	    if(count == 8){
+			break;
+		}
+        var row = table.insertRow(1);
+		row.style.backgroundColor = "white";
+		var cell1 = row.insertCell(0);
+		var cell2 = row.insertCell(1);
+		cell1.innerHTML = name;
+		cell2.innerHTML = ids[i];
+		count++;
+      }
+    }       
+  }
+}
+// press key
+$("#myInput").keyup(function(event){
+    if(event.keyCode == 13){
+        $("#Go").click();
+    }
+});
+</script>
+
+</body>
+</html>
